@@ -30,6 +30,10 @@ public final class GuiMenuFactory {
     private GuiMenuFactory() {
     }
 
+    /** A menu paired with the title it was built with, since canvas doesn't expose it. */
+    public record TitledMenu(Menu menu, String title) {
+    }
+
     private static String title(String key) {
         return StyleManager.get().getPrimaryColor()
                 + LegacyComponentSerializer.legacySection().serialize(MiniMessage.miniMessage().deserialize(Lang.get().raw(key)));
@@ -40,45 +44,54 @@ public final class GuiMenuFactory {
                 + LegacyComponentSerializer.legacySection().serialize(MiniMessage.miniMessage().deserialize(Lang.get().raw(key, pairs)));
     }
 
-    public static Menu createPublicKitRoomMenu() {
-        return ChestMenu.builder(6).title(title("gui.public-kit-room-title")).redraw(true).build();
+    private static TitledMenu chestMenu(String title) {
+        // Redraw makes canvas swap menus inside the already-open inventory, so
+        // the client keeps its cursor position instead of recentering on a
+        // reopen. The reused inventory keeps its old title, which GUI fixes up
+        // afterwards — only possible when the server has InventoryView#setTitle.
+        Menu menu = ChestMenu.builder(6).title(title).redraw(GuiCompat.supportsTitleUpdate()).build();
+        return new TitledMenu(menu, title);
     }
 
-    public static Menu createKitMenu(int slot) {
-        return ChestMenu.builder(6).title(title("gui.kit-editor-title", "slot", String.valueOf(slot))).build();
+    public static TitledMenu createPublicKitRoomMenu() {
+        return chestMenu(title("gui.public-kit-room-title"));
     }
 
-    public static Menu createPublicKitMenu(String id) {
-        return ChestMenu.builder(6).title(title("gui.public-kit-editor-title", "id", id)).build();
+    public static TitledMenu createKitMenu(int slot) {
+        return chestMenu(title("gui.kit-editor-title", "slot", String.valueOf(slot)));
     }
 
-    public static Menu createECMenu(int slot) {
-        return ChestMenu.builder(6).title(title("gui.enderchest-editor-title", "slot", String.valueOf(slot))).build();
+    public static TitledMenu createPublicKitMenu(String id) {
+        return chestMenu(title("gui.public-kit-editor-title", "id", id));
     }
 
-    public static Menu createInspectMenu(int slot, String playerName) {
-        return ChestMenu.builder(6).title(title("gui.inspect-kit-title", "player", playerName, "slot", String.valueOf(slot))).build();
+    public static TitledMenu createECMenu(int slot) {
+        return chestMenu(title("gui.enderchest-editor-title", "slot", String.valueOf(slot)));
     }
 
-    public static Menu createInspectEcMenu(int slot, String playerName) {
-        return ChestMenu.builder(6).title(title("gui.inspect-ec-title", "player", playerName, "slot", String.valueOf(slot))).build();
+    public static TitledMenu createInspectMenu(int slot, String playerName) {
+        return chestMenu(title("gui.inspect-kit-title", "player", playerName, "slot", String.valueOf(slot)));
     }
 
-    public static Menu createMainMenu(Player player, int page, int pages) {
+    public static TitledMenu createInspectEcMenu(int slot, String playerName) {
+        return chestMenu(title("gui.inspect-ec-title", "player", playerName, "slot", String.valueOf(slot)));
+    }
+
+    public static TitledMenu createMainMenu(Player player, int page, int pages) {
         if (pages <= 1) {
-            return ChestMenu.builder(6).title(title("gui.main-menu-title", "player", player.getName())).build();
+            return chestMenu(title("gui.main-menu-title", "player", player.getName()));
         }
-        return ChestMenu.builder(6).title(title("gui.main-menu-title-paged",
+        return chestMenu(title("gui.main-menu-title-paged",
                 "player", player.getName(),
                 "page", String.valueOf(page + 1),
-                "pages", String.valueOf(pages))).build();
+                "pages", String.valueOf(pages)));
     }
 
-    public static Menu createKitRoomMenu() {
-        return ChestMenu.builder(6).title(title("gui.kit-room-title")).redraw(true).build();
+    public static TitledMenu createKitRoomMenu() {
+        return chestMenu(title("gui.kit-room-title"));
     }
 
-    public static Menu createViewPublicKitMenu(String id) {
-        return ChestMenu.builder(6).title(title("gui.view-public-kit-title", "id", id)).redraw(true).build();
+    public static TitledMenu createViewPublicKitMenu(String id) {
+        return chestMenu(title("gui.view-public-kit-title", "id", id));
     }
 }

@@ -55,7 +55,16 @@ public class ItemUtil {
     }
 
     public static ItemStack createGlassPane() {
-        return createItem(StyleManager.get().getGlassMaterial(), 1, " ");
+        ItemStack item = new ItemStack(StyleManager.get().getGlassMaterial());
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            // No tooltip at all where the API allows it; a blank name otherwise.
+            if (!GuiCompat.hideTooltip(meta)) {
+                meta.setDisplayName(" ");
+            }
+            item.setItemMeta(meta);
+        }
+        return item;
     }
 
     public static ItemStack createItem(Material material, String name) {
