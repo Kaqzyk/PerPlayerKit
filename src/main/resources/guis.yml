@@ -424,7 +424,7 @@ guis:
         slots: 52
         item:
           material: BARRIER
-          name: "%lang:gui.clear-kit-button%"
+          name: "%lang:gui.clear-ec-button%"
           lore:
             - "%lang:gui.lore-shift-clear%"
         actions:
@@ -627,7 +627,7 @@ guis:
       coming-soon:
         order: 5
         type: static
-        slots: "18-35"
+        slots: "9-35"
         item:
           material: BOOK
           name: "%lang:gui.more-kits-coming%"
@@ -635,7 +635,9 @@ guis:
         order: 10
         type: component
         component: public-kit-list
-        slots: "18-35"
+        # 27 slots; kits beyond that are logged and not shown. Widen the
+        # range (and coming-soon above) if you define more.
+        slots: "9-35"
         variants:
           assigned:
             item:

@@ -59,6 +59,13 @@ class GuiSlotsTest {
     }
 
     @Test
+    void rejectsAbsurdRangesWithoutExpandingThem() {
+        assertTrue(parse("0-999999999").isEmpty());
+        assertTrue(parse("0-" + Integer.MAX_VALUE).isEmpty());
+        assertEquals(2, warnings.size());
+    }
+
+    @Test
     void emptyWhenNull() {
         assertTrue(parse(null).isEmpty());
         assertTrue(warnings.isEmpty());

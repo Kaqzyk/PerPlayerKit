@@ -34,6 +34,8 @@ import java.util.function.Consumer;
  */
 public final class GuiSlots {
 
+    private static final int MAX_RANGE_SIZE = 128;
+
     private GuiSlots() {
     }
 
@@ -83,6 +85,13 @@ public final class GuiSlots {
                 Integer end = Ints.tryParse(trimmed.substring(dash + 1).trim());
                 if (start == null || end == null) {
                     warn.accept("Invalid slot range '" + trimmed + "'");
+                    continue;
+                }
+                // No menu has more than 54 slots; a huge range is a typo, and
+                // expanding it first would balloon the set (or overflow at the
+                // int boundary) before the bounds check could reject it.
+                if (Math.abs((long) end - start) >= MAX_RANGE_SIZE) {
+                    warn.accept("Slot range '" + trimmed + "' is far larger than any menu, skipping");
                     continue;
                 }
                 int step = start <= end ? 1 : -1;

@@ -25,10 +25,11 @@ class BundledGuisConfigTest {
     private static YamlConfiguration config;
 
     @BeforeAll
-    static void load() {
-        var stream = BundledGuisConfigTest.class.getClassLoader().getResourceAsStream("guis.yml");
-        assertNotNull(stream, "guis.yml missing from resources");
-        config = YamlConfiguration.loadConfiguration(new InputStreamReader(stream, StandardCharsets.UTF_8));
+    static void load() throws Exception {
+        try (var stream = BundledGuisConfigTest.class.getClassLoader().getResourceAsStream("guis.yml")) {
+            assertNotNull(stream, "guis.yml missing from resources");
+            config = YamlConfiguration.loadConfiguration(new InputStreamReader(stream, StandardCharsets.UTF_8));
+        }
     }
 
     private static ConfigurationSection gui(String id) {
