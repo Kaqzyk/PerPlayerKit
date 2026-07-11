@@ -29,7 +29,7 @@ import java.lang.reflect.Method;
  * compiles against: InventoryView#setTitle (1.20+) and
  * ItemMeta#setHideTooltip (1.20.5+). Both degrade gracefully on old servers.
  */
-final class GuiCompat {
+public final class GuiCompat {
 
     private static final Method SET_TITLE = findMethod(InventoryView.class, "setTitle", String.class);
     private static final Method SET_HIDE_TOOLTIP = findMethod(ItemMeta.class, "setHideTooltip", boolean.class);
@@ -50,11 +50,11 @@ final class GuiCompat {
      * When false, menus must reopen so titles stay correct, at the cost of the
      * client recentering the mouse cursor.
      */
-    static boolean supportsTitleUpdate() {
+    public static boolean supportsTitleUpdate() {
         return SET_TITLE != null;
     }
 
-    static void updateTitle(Player player, String title) {
+    public static void updateTitle(Player player, String title) {
         if (SET_TITLE == null || title == null) {
             return;
         }
