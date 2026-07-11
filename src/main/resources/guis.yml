@@ -1,0 +1,766 @@
+# -----------------------------------------------------------------------------
+# PerPlayerKit menu layouts
+# -----------------------------------------------------------------------------
+# Every menu the plugin opens is described here. A menu this file does not
+# define falls back to the copy bundled inside the jar, so deleting a section
+# (or running an older file after an update) never breaks the plugin.
+#
+# Menu keys:
+#   rows        1-6 chest rows (default 6)
+#   title       inventory title; "title-paged" is used instead when the main
+#               menu spans multiple pages (max-kits > 9)
+#   open-sound  play the open-GUI sound when this menu opens
+#   elements    the menu's contents, rendered in ascending "order"
+#
+# Element keys:
+#   type                "static" (an item, optionally clickable) or "component"
+#                       (plugin-rendered content, see below); "fill" is an
+#                       alias of static
+#   slots               where to render: a number, "0-8,53" style string, or list
+#   order               render order; higher paints over lower (fill first,
+#                       data next, buttons last)
+#   item                material / amount / name / lore / glow / hide-flags.
+#                       material "@glass" is the styled filler pane.
+#   permission          only render for viewers with this permission
+#   exclude-permission  only render for viewers WITHOUT this permission
+#   editable            true/false, or a permission node that grants editing
+#   actions             click handlers, keyed by click type: a specific type
+#                       ("shift_right"), "shift", "left", "right", "middle",
+#                       or "any". The most specific matching key wins.
+#   variants            per-state item/actions overrides used by components
+#                       (e.g. an enderchest slot renders "exists" or
+#                       "missing"; a missing variant falls back to "default",
+#                       then to the element itself)
+#
+# Components:
+#   kit-slot-selector   one button per kit slot of the current page; variants
+#                       "exists"/"missing". "source: enderchest" checks
+#                       enderchest slots instead of kits.
+#   main-menu-pagination  previous/next page arrows ("previous-slot"/"next-slot")
+#   public-kit-list     one entry per configured public kit; variants
+#                       assigned/unassigned/admin_assigned/admin_unassigned
+#   kit-data / enderchest-data / player-enderchest-data / kit-room-data
+#                       item contents; the editor save uses these slots, in
+#                       order, so keep them contiguous unless you know better
+#   kit-room-category-buttons  one button per kitroom category (config.yml)
+#
+# Text placeholders, resolved in this order:
+#   %lang:<key>%   a message from the active language file (lang/<code>.yml)
+#   %token%        a context value: slot, page (1-based), page_index (0-based),
+#                  pages, player, id, public_kit_name, public_kit_icon,
+#                  kitroom_name, kitroom_material, viewer_name, viewer_uuid,
+#                  primary_color
+#   PlaceholderAPI placeholders work anywhere when the plugin is installed.
+# Text is MiniMessage ("<green><b>...</b></green>").
+#
+# Actions:
+#   open-gui               {gui, context: {...}} — open another menu. Only the
+#                          keys you declare are passed; use "%token%" values
+#                          to forward from the current context.
+#   load-player-kit / load-enderchest / load-public-kit   {close: true}
+#   close                  close the menu
+#   clear-editor           empty the editor's data slots
+#   import-player-inventory / import-player-enderchest    fill the editor
+#   clear-player-inventory / repair-player-items
+#   delete-player-kit / delete-player-enderchest          (inspect menus)
+#   save-kit-room-page / broadcast-kit-room-opened
+#   Any action may carry "permission" to restrict who can trigger it.
+#
+# The "templates" section holds YAML anchors shared by several menus below.
+# To restyle one menu's copy independently, replace its "<<:" merge line with
+# the elements written out.
+# -----------------------------------------------------------------------------
+
+config-version: 2
+
+templates:
+  armor-indicators: &armor-indicators
+    boots:
+      order: 20
+      type: static
+      slots: 45
+      item:
+        material: CHAINMAIL_BOOTS
+        name: "<gray><b>BOOTS</b></gray>"
+    leggings:
+      order: 21
+      type: static
+      slots: 46
+      item:
+        material: CHAINMAIL_LEGGINGS
+        name: "<gray><b>LEGGINGS</b></gray>"
+    chestplate:
+      order: 22
+      type: static
+      slots: 47
+      item:
+        material: CHAINMAIL_CHESTPLATE
+        name: "<gray><b>CHESTPLATE</b></gray>"
+    helmet:
+      order: 23
+      type: static
+      slots: 48
+      item:
+        material: CHAINMAIL_HELMET
+        name: "<gray><b>HELMET</b></gray>"
+    offhand:
+      order: 24
+      type: static
+      slots: 49
+      item:
+        material: SHIELD
+        name: "<gray><b>OFFHAND</b></gray>"
+  kit-editor-tools: &kit-editor-tools
+    import:
+      order: 30
+      type: static
+      slots: 51
+      item:
+        material: CHEST
+        name: "%lang:gui.import-button%"
+        lore:
+          - "%lang:gui.lore-import-inventory%"
+      actions:
+        any:
+          - type: import-player-inventory
+    clear:
+      order: 31
+      type: static
+      slots: 52
+      item:
+        material: BARRIER
+        name: "%lang:gui.clear-kit-button%"
+        lore:
+          - "%lang:gui.lore-shift-clear%"
+      actions:
+        shift:
+          - type: clear-editor
+
+guis:
+  main-menu:
+    rows: 6
+    title: "%primary_color%%lang:gui.main-menu-title%"
+    title-paged: "%primary_color%%lang:gui.main-menu-title-paged%"
+    elements:
+      fill:
+        order: 0
+        type: fill
+        slots: "0-53"
+        item:
+          material: "@glass"
+      kits:
+        order: 10
+        type: component
+        component: kit-slot-selector
+        slots: "9-17"
+        item:
+          material: CHEST
+          name: "%lang:gui.kit-slot-name%"
+          lore:
+            - "%lang:gui.lore-left-load%"
+            - "%lang:gui.lore-right-edit%"
+        actions:
+          left:
+            - type: load-player-kit
+              close: true
+          right:
+            - type: open-gui
+              gui: player-kit-editor
+              context:
+                slot: "%slot%"
+      enderchests:
+        order: 20
+        type: component
+        component: kit-slot-selector
+        source: enderchest
+        slots: "18-26"
+        variants:
+          exists:
+            item:
+              material: ENDER_CHEST
+              name: "%lang:gui.enderchest-slot-name%"
+              lore:
+                - "%lang:gui.lore-left-load%"
+                - "%lang:gui.lore-right-edit%"
+            actions:
+              left:
+                - type: load-enderchest
+                  close: true
+              right:
+                - type: open-gui
+                  gui: enderchest-editor
+                  context:
+                    slot: "%slot%"
+          missing:
+            item:
+              material: ENDER_EYE
+              name: "%lang:gui.enderchest-slot-name%"
+              lore:
+                - "%lang:gui.lore-click-create%"
+            actions:
+              any:
+                - type: open-gui
+                  gui: enderchest-editor
+                  context:
+                    slot: "%slot%"
+      kit-status:
+        order: 30
+        type: component
+        component: kit-slot-selector
+        slots: "27-35"
+        variants:
+          exists:
+            item:
+              material: KNOWLEDGE_BOOK
+              name: "%lang:gui.kit-exists%"
+              lore:
+                - "%lang:gui.lore-click-edit%"
+            actions:
+              any:
+                - type: open-gui
+                  gui: player-kit-editor
+                  context:
+                    slot: "%slot%"
+          missing:
+            item:
+              material: BOOK
+              name: "%lang:gui.kit-not-found%"
+              lore:
+                - "%lang:gui.lore-click-create%"
+            actions:
+              any:
+                - type: open-gui
+                  gui: player-kit-editor
+                  context:
+                    slot: "%slot%"
+      kit-room:
+        order: 40
+        type: static
+        slots: 37
+        item:
+          material: NETHER_STAR
+          name: "%lang:gui.kit-room-button%"
+        actions:
+          any:
+            - type: open-gui
+              gui: kit-room
+            - type: broadcast-kit-room-opened
+      public-kits:
+        order: 41
+        type: static
+        slots: 38
+        item:
+          material: BOOKSHELF
+          name: "%lang:gui.premade-kits-button%"
+        actions:
+          any:
+            - type: open-gui
+              gui: public-kit-menu
+      info:
+        order: 42
+        type: static
+        slots: 39
+        item:
+          material: OAK_SIGN
+          name: "%lang:gui.info-button%"
+          lore:
+            - "%lang:gui.lore-info-load%"
+            - "%lang:gui.lore-info-edit%"
+            - "%lang:gui.lore-info-share%"
+      clear-inventory:
+        order: 43
+        type: static
+        slots: 41
+        item:
+          material: REDSTONE_BLOCK
+          name: "%lang:gui.clear-inventory-button%"
+          lore:
+            - "%lang:gui.lore-shift-click%"
+        actions:
+          shift:
+            - type: clear-player-inventory
+      share-info:
+        order: 44
+        type: static
+        slots: 42
+        item:
+          material: COMPASS
+          name: "%lang:gui.share-kits-button%"
+          lore:
+            - "%lang:gui.lore-share-kits%"
+      repair:
+        order: 45
+        type: static
+        slots: 43
+        item:
+          material: EXPERIENCE_BOTTLE
+          name: "%lang:gui.repair-items-button%"
+        actions:
+          any:
+            - type: repair-player-items
+      pagination:
+        order: 50
+        type: component
+        component: main-menu-pagination
+        previous-slot: 45
+        next-slot: 53
+        variants:
+          previous:
+            item:
+              material: ARROW
+              name: "%lang:gui.previous-page-button%"
+              lore:
+                - "%lang:gui.lore-page-indicator%"
+            actions:
+              any:
+                - type: open-gui
+                  gui: main-menu
+                  context:
+                    page_index: "%page_index%"
+          next:
+            item:
+              material: ARROW
+              name: "%lang:gui.next-page-button%"
+              lore:
+                - "%lang:gui.lore-page-indicator%"
+            actions:
+              any:
+                - type: open-gui
+                  gui: main-menu
+                  context:
+                    page_index: "%page_index%"
+
+  player-kit-editor:
+    rows: 6
+    title: "%primary_color%%lang:gui.kit-editor-title%"
+    elements:
+      <<: [*armor-indicators, *kit-editor-tools]
+      fill:
+        order: 0
+        type: fill
+        slots: "41-53"
+        item:
+          material: "@glass"
+      data:
+        order: 10
+        type: component
+        component: kit-data
+        slots: "0-40"
+        editable: true
+      back:
+        order: 32
+        type: static
+        slots: 53
+        item:
+          material: OAK_DOOR
+          name: "%lang:gui.back-button%"
+        actions:
+          any:
+            - type: open-gui
+              gui: main-menu
+              context:
+                page_index: "%slot_page%"
+
+  public-kit-editor:
+    rows: 6
+    title: "%primary_color%%lang:gui.public-kit-editor-title%"
+    elements:
+      <<: [*armor-indicators, *kit-editor-tools]
+      fill:
+        order: 0
+        type: fill
+        slots: "41-53"
+        item:
+          material: "@glass"
+      data:
+        order: 10
+        type: component
+        component: kit-data
+        slots: "0-40"
+        editable: true
+      back:
+        order: 32
+        type: static
+        slots: 53
+        item:
+          material: OAK_DOOR
+          name: "%lang:gui.back-button%"
+        actions:
+          any:
+            - type: open-gui
+              gui: main-menu
+
+  enderchest-editor:
+    rows: 6
+    title: "%primary_color%%lang:gui.enderchest-editor-title%"
+    elements:
+      fill:
+        order: 0
+        type: fill
+        slots: "0-8,36-53"
+        item:
+          material: "@glass"
+      data:
+        order: 10
+        type: component
+        component: enderchest-data
+        slots: "9-35"
+        editable: true
+      import:
+        order: 30
+        type: static
+        slots: 51
+        item:
+          material: ENDER_CHEST
+          name: "%lang:gui.import-button%"
+          lore:
+            - "%lang:gui.lore-import-ec%"
+        actions:
+          any:
+            - type: import-player-enderchest
+      clear:
+        order: 31
+        type: static
+        slots: 52
+        item:
+          material: BARRIER
+          name: "%lang:gui.clear-kit-button%"
+          lore:
+            - "%lang:gui.lore-shift-clear%"
+        actions:
+          shift:
+            - type: clear-editor
+      back:
+        order: 32
+        type: static
+        slots: 53
+        item:
+          material: OAK_DOOR
+          name: "%lang:gui.back-button%"
+        actions:
+          any:
+            - type: open-gui
+              gui: main-menu
+              context:
+                page_index: "%slot_page%"
+
+  inspect-kit:
+    rows: 6
+    title: "%primary_color%%lang:gui.inspect-kit-title%"
+    open-sound: true
+    elements:
+      <<: *armor-indicators
+      fill:
+        order: 0
+        type: fill
+        slots: "41-53"
+        item:
+          material: "@glass"
+      data:
+        order: 10
+        type: component
+        component: kit-data
+        slots: "0-40"
+        editable: perplayerkit.admin
+      delete:
+        order: 30
+        type: static
+        permission: perplayerkit.admin
+        slots: 52
+        item:
+          material: BARRIER
+          name: "%lang:gui.clear-kit-button%"
+          lore:
+            - "%lang:gui.lore-shift-delete-kit%"
+        actions:
+          shift:
+            - type: delete-player-kit
+      close:
+        order: 31
+        type: static
+        slots: 53
+        item:
+          material: OAK_DOOR
+          name: "%lang:gui.close-button%"
+        actions:
+          any:
+            - type: close
+
+  inspect-enderchest:
+    rows: 6
+    title: "%primary_color%%lang:gui.inspect-ec-title%"
+    open-sound: true
+    elements:
+      fill:
+        order: 0
+        type: fill
+        slots: "0-8,36-53"
+        item:
+          material: "@glass"
+      data:
+        order: 10
+        type: component
+        component: enderchest-data
+        slots: "9-35"
+        editable: perplayerkit.admin
+      delete:
+        order: 30
+        type: static
+        permission: perplayerkit.admin
+        slots: 52
+        item:
+          material: BARRIER
+          name: "%lang:gui.clear-ec-button%"
+          lore:
+            - "%lang:gui.lore-shift-delete-ec%"
+        actions:
+          shift:
+            - type: delete-player-enderchest
+      close:
+        order: 31
+        type: static
+        slots: 53
+        item:
+          material: OAK_DOOR
+          name: "%lang:gui.close-button%"
+        actions:
+          any:
+            - type: close
+
+  kit-room:
+    rows: 6
+    title: "%primary_color%%lang:gui.kit-room-title%"
+    elements:
+      fill:
+        order: 0
+        type: fill
+        slots: "45-53"
+        item:
+          material: "@glass"
+      data:
+        order: 10
+        type: component
+        component: kit-room-data
+        slots: "0-44"
+        editable: true
+      refill:
+        order: 20
+        type: static
+        slots: 45
+        item:
+          material: BEACON
+          name: "%lang:gui.refill-button%"
+        actions:
+          any:
+            - type: open-gui
+              gui: kit-room
+              context:
+                page_index: "%page_index%"
+      categories:
+        order: 30
+        type: component
+        component: kit-room-category-buttons
+        slots: "47-51"
+        variants:
+          default:
+            item:
+              material: "%kitroom_material%"
+              name: "<reset>%kitroom_name%"
+              hide-flags: true
+            actions:
+              any:
+                - type: open-gui
+                  gui: kit-room
+                  context:
+                    page_index: "%page_index%"
+          active:
+            item:
+              material: "%kitroom_material%"
+              name: "<reset>%kitroom_name%"
+              hide-flags: true
+              glow: true
+            actions:
+              any:
+                - type: open-gui
+                  gui: kit-room
+                  context:
+                    page_index: "%page_index%"
+      back:
+        order: 40
+        type: static
+        exclude-permission: perplayerkit.editkitroom
+        slots: 53
+        item:
+          material: OAK_DOOR
+          name: "%lang:gui.back-button%"
+        actions:
+          any:
+            - type: open-gui
+              gui: main-menu
+      save:
+        order: 41
+        type: static
+        permission: perplayerkit.editkitroom
+        slots: 53
+        item:
+          material: BARRIER
+          # Stack size shows which category page a save would overwrite.
+          amount: "%page%"
+          name: "%lang:gui.edit-menu-button%"
+          lore:
+            - "%lang:gui.edit-menu-lore%"
+        actions:
+          shift_right:
+            - type: save-kit-room-page
+              permission: perplayerkit.editkitroom
+
+  public-kit-menu:
+    rows: 6
+    title: "%primary_color%%lang:gui.public-kit-room-title%"
+    elements:
+      fill:
+        order: 0
+        type: fill
+        slots: "0-53"
+        item:
+          material: "@glass"
+      coming-soon:
+        order: 5
+        type: static
+        slots: "18-35"
+        item:
+          material: BOOK
+          name: "%lang:gui.more-kits-coming%"
+      kits:
+        order: 10
+        type: component
+        component: public-kit-list
+        slots: "18-35"
+        variants:
+          assigned:
+            item:
+              material: "%public_kit_icon%"
+              name: "<reset>%public_kit_name%"
+            actions:
+              left:
+                - type: load-public-kit
+                  close: true
+              right:
+                - type: open-gui
+                  gui: public-kit-viewer
+                  context:
+                    id: "%id%"
+          unassigned:
+            item:
+              material: "%public_kit_icon%"
+              name: "<reset>%public_kit_name% %lang:gui.unassigned-tag%"
+              lore:
+                - "%lang:gui.lore-unassigned-info%"
+          admin_assigned:
+            item:
+              material: "%public_kit_icon%"
+              name: "<reset>%public_kit_name%"
+              lore:
+                - "%lang:gui.lore-admin-shift-edit%"
+            actions:
+              shift:
+                - type: open-gui
+                  gui: public-kit-editor
+                  context:
+                    id: "%id%"
+              # No close on load: admins test several kits in one session.
+              left:
+                - type: load-public-kit
+              right:
+                - type: open-gui
+                  gui: public-kit-viewer
+                  context:
+                    id: "%id%"
+          admin_unassigned:
+            item:
+              material: "%public_kit_icon%"
+              name: "<reset>%public_kit_name% %lang:gui.unassigned-tag%"
+              lore:
+                - "%lang:gui.lore-unassigned-info%"
+                - "%lang:gui.lore-admin-shift-edit%"
+            actions:
+              shift:
+                - type: open-gui
+                  gui: public-kit-editor
+                  context:
+                    id: "%id%"
+              # Both give the "kit not found / how to assign" feedback.
+              left:
+                - type: load-public-kit
+              right:
+                - type: open-gui
+                  gui: public-kit-viewer
+                  context:
+                    id: "%id%"
+      back:
+        order: 20
+        type: static
+        slots: 53
+        item:
+          material: OAK_DOOR
+          name: "%lang:gui.back-button%"
+        actions:
+          any:
+            - type: open-gui
+              gui: main-menu
+
+  public-kit-viewer:
+    rows: 6
+    title: "%primary_color%%lang:gui.view-public-kit-title%"
+    elements:
+      <<: *armor-indicators
+      fill:
+        order: 0
+        type: fill
+        slots: "41-53"
+        item:
+          material: "@glass"
+      data:
+        order: 10
+        type: component
+        component: kit-data
+        slots: "0-40"
+      load:
+        order: 30
+        type: static
+        slots: 52
+        item:
+          material: APPLE
+          name: "%lang:gui.load-kit-button%"
+        actions:
+          any:
+            - type: load-public-kit
+              close: true
+      back:
+        order: 31
+        type: static
+        slots: 53
+        item:
+          material: OAK_DOOR
+          name: "%lang:gui.back-button%"
+        actions:
+          any:
+            - type: open-gui
+              gui: public-kit-menu
+
+  view-only-enderchest:
+    rows: 5
+    title: "%primary_color%%lang:gui.enderchest-view-title%"
+    open-sound: true
+    elements:
+      fill:
+        order: 0
+        type: fill
+        slots: "0-8,36-44"
+        item:
+          material: "@glass"
+      data:
+        order: 10
+        type: component
+        component: player-enderchest-data
+        slots: "9-35"
