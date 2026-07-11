@@ -1,5 +1,7 @@
 # PerPlayerKit
 
+Website: [perplayerkit.com](https://perplayerkit.com) (work in progress)
+
 Join the discord for more information and support: [Discord](https://discord.gg/5djuBSKWuV)
 
 ## 🚀 Quick Start
