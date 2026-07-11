@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 Noah Ross
+ * Copyright 2022-2026 Noah Ross
  *
  * This file is part of PerPlayerKit.
  *
