@@ -18,29 +18,25 @@
  */
 package dev.noah.perplayerkit.listeners;
 
-import dev.noah.perplayerkit.gui.EditorSaver;
-import dev.noah.perplayerkit.gui.GUI;
+import dev.noah.perplayerkit.gui.configurable.ConfigurableGuiService;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.inventory.Inventory;
 
+/**
+ * Persists kit/enderchest editor contents when the menu inventory actually
+ * closes. Navigation between menus that reuses the open inventory never fires
+ * this event; ConfigurableGuiService flushes the editor session itself before
+ * opening the next menu.
+ */
 public class KitMenuCloseListener implements Listener {
 
     @EventHandler
     public void onEditorClose(InventoryCloseEvent e) {
-        Inventory inv = e.getInventory();
-        if (inv.getSize() != 54 || inv.getLocation() != null) {
+        if (!(e.getPlayer() instanceof Player player)) {
             return;
         }
-
-        Player player = (Player) e.getPlayer();
-        GUI.EditorContext context = GUI.getAndRemoveEditorContext(player.getUniqueId());
-        if (context == null) {
-            return;
-        }
-
-        EditorSaver.save(player, context, inv);
+        ConfigurableGuiService.get().handleInventoryClose(player, e.getInventory());
     }
 }

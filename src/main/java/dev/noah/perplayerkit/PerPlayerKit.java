@@ -47,6 +47,7 @@ import dev.noah.perplayerkit.listeners.*;
 import dev.noah.perplayerkit.listeners.antiexploit.CommandListener;
 import dev.noah.perplayerkit.listeners.antiexploit.ShulkerDropItemsListener;
 import dev.noah.perplayerkit.listeners.features.OldDeathDropListener;
+import dev.noah.perplayerkit.gui.configurable.ConfigurableGuiService;
 import dev.noah.perplayerkit.storage.StorageManager;
 import dev.noah.perplayerkit.storage.StorageSelector;
 import dev.noah.perplayerkit.storage.exceptions.StorageConnectionException;
@@ -95,6 +96,7 @@ public final class PerPlayerKit extends JavaPlugin {
 
         new Lang(this);
         new StyleManager(this);
+        new ConfigurableGuiService(this);
 
         new ItemFilter(this);
         new BroadcastManager(this);
