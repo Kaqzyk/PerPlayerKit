@@ -74,6 +74,10 @@ public class KitRoomDataManager {
         return kitroomData.get(page);
     }
 
+    public int pageCount() {
+        return kitroomData.size();
+    }
+
     public void saveToDBAsync() {
         new BukkitRunnable() {
 
