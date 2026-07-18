@@ -55,6 +55,7 @@ import dev.noah.perplayerkit.util.BackupManager;
 import dev.noah.perplayerkit.util.BroadcastManager;
 import dev.noah.perplayerkit.util.KitSlots;
 import dev.noah.perplayerkit.util.Lang;
+import dev.noah.perplayerkit.util.MessageDelivery;
 import dev.noah.perplayerkit.util.StyleManager;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
@@ -93,6 +94,7 @@ public final class PerPlayerKit extends JavaPlugin {
 
         KitSlots.init(this);
 
+        MessageDelivery.init(this);
         new Lang(this);
         new StyleManager(this);
 
@@ -269,6 +271,8 @@ public final class PerPlayerKit extends JavaPlugin {
         if (backupManager != null) {
             backupManager.shutdown();
         }
+
+        MessageDelivery.close();
     }
 
     /**

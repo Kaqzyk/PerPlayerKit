@@ -18,13 +18,11 @@
  */
 package dev.noah.perplayerkit.util;
 
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
@@ -47,14 +45,12 @@ public class Lang {
 
     private final Plugin plugin;
     private final MiniMessage mm = MiniMessage.miniMessage();
-    private final BukkitAudiences audience;
     private final YamlConfiguration lang;
     private final YamlConfiguration fallback;
     private final String activeLang;
 
     public Lang(Plugin plugin) {
         this.plugin = plugin;
-        this.audience = BukkitAudiences.create(plugin);
         extractBundledLangFiles();
 
         String configured = plugin.getConfig().getString("language", DEFAULT_LANG);
@@ -71,13 +67,12 @@ public class Lang {
     }
 
     /**
-     * Test-only constructor: skips file extraction and Bukkit audience setup.
-     * Sends fall back to {@link CommandSender#sendMessage(String)} with legacy
-     * color codes so tests can verify with simple Mockito matchers.
+     * Test-only constructor: skips file extraction. With MessageDelivery
+     * uninitialized, sends fall back to {@link CommandSender#sendMessage(String)}
+     * with legacy color codes so tests can verify with simple Mockito matchers.
      */
     Lang(YamlConfiguration langConfig) {
         this.plugin = null;
-        this.audience = null;
         this.activeLang = DEFAULT_LANG;
         this.fallback = langConfig;
         this.lang = langConfig;
@@ -229,16 +224,7 @@ public class Lang {
     }
 
     private void deliver(CommandSender sender, Component msg) {
-        if (audience != null && sender instanceof Player p) {
-            audience.player(p).sendMessage(msg);
-        } else {
-            // Console/RCON/command blocks: adventure-platform picks its console
-            // facet by sniffing the server version and silently drops messages
-            // on versions it doesn't know yet, so send a legacy-serialized
-            // string instead — colors still render and it can't break on
-            // future server versions.
-            sender.sendMessage(LegacyComponentSerializer.legacySection().serialize(msg));
-        }
+        MessageDelivery.send(sender, msg);
     }
 
     public void sendNoPrefix(CommandSender sender, String key, String... pairs) {

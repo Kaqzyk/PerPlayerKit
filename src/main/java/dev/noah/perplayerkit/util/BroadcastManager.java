@@ -19,7 +19,6 @@
 package dev.noah.perplayerkit.util;
 
 import me.clip.placeholderapi.PlaceholderAPI;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -40,11 +39,9 @@ public class BroadcastManager {
     private final Plugin plugin;
     private final CooldownManager repairBroadcastCooldown = new CooldownManager(5);
     private final CooldownManager kitroomBroadcastCooldown = new CooldownManager(15);
-    private final BukkitAudiences audience;
 
     public BroadcastManager(Plugin plugin) {
         this.plugin = plugin;
-        audience = BukkitAudiences.create(plugin);
         instance = this;
     }
 
@@ -85,7 +82,7 @@ public class BroadcastManager {
         for (Player broadcastPlayer : world.getPlayers()) {
             if (broadcastPlayer.getLocation().distance(player.getLocation()) < broadcastDistance) {
                 if (broadcastPlayer.hasPermission(permission)) {
-                    audience.player(broadcastPlayer).sendMessage(prefix.append(body));
+                    MessageDelivery.send(broadcastPlayer, prefix.append(body));
                 }
             }
         }
@@ -187,7 +184,7 @@ public class BroadcastManager {
         if (plugin.getConfig().getBoolean("scheduled-broadcast.enabled") && !messages.isEmpty()) {
             Bukkit.getScheduler().runTaskTimer(plugin, () -> {
                 for (Player player : Bukkit.getOnlinePlayers()) {
-                    audience.player(player).sendMessage(messages.get(index[0]));
+                    MessageDelivery.send(player, messages.get(index[0]));
                 }
                 index[0] = (index[0] + 1) % messages.size();
             }, 0, plugin.getConfig().getInt("scheduled-broadcast.period") * 20L);
@@ -195,7 +192,7 @@ public class BroadcastManager {
     }
 
     public void sendComponentMessage(Player player, Component message) {
-        audience.player(player).sendMessage(message);
+        MessageDelivery.send(player, message);
     }
 
     public enum MessageKey {

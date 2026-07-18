@@ -12,6 +12,15 @@ config-version: 2 #do not change this value
 # Set to a custom code to use plugins/PerPlayerKit/lang/<your-code>.yml.
 language: "en"
 
+# How chat messages are delivered to players.
+#   auto     - use the server's built-in Adventure support when available
+#              (Paper, Purpur, etc.), otherwise use the bundled platform library.
+#   native   - force the server's built-in Adventure support.
+#   platform - force the bundled adventure-platform library.
+#   legacy   - plain color-coded text without hover/click buttons. Most
+#              compatible; try this if plugin messages do not appear in chat.
+message-delivery: auto
+
 
 #Database credentials are only required if you are using MySQL, PostgreSQL or Redis
 # It is strongly recommended to use MySQL, PostgreSQL or SQLite
