@@ -1,6 +1,10 @@
 # PerPlayerKit
+[![Modrinth](https://img.shields.io/modrinth/dt/perplayerkit?logo=modrinth)](https://modrinth.com/plugin/perplayerkit)
+[![Spigot](https://img.shields.io/spiget/downloads/121437?label=Spigot&logo=spigotmc)](https://www.spigotmc.org/resources/perplayerkit.121437/)
+[![bStats](https://img.shields.io/bstats/servers/24380?label=Servers%20[Live]&logo=chartdotjs)](https://bstats.org/plugin/bukkit/PerPlayerKit/24380)
+[![bStats](https://img.shields.io/bstats/players/24380?label=Players%20[Live]&logo=chartdotjs)](https://bstats.org/plugin/bukkit/PerPlayerKit/24380)
 
-Website: [perplayerkit.com](https://perplayerkit.com) (work in progress)
+Docs: [perplayerkit.com](https://perplayerkit.com) (work in progress)
 
 Join the discord for more information and support: [Discord](https://discord.gg/5djuBSKWuV)
 
