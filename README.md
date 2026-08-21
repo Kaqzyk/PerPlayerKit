@@ -29,6 +29,8 @@ PerPlayerKit is a [PaperMC](https://papermc.io/) plugin that allows players to m
 
 PerPlayerKits uses a minecraft GUI library called canvas, it can be found [here](https://github.com/IPVP-MC/canvas). PerPlayerKits was supports version 1.19 and above.
 
+Optionally, PerPlayerKit integrates with [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) for placeholders in messages and [WorldGuard](https://enginehub.org/worldguard) for region-specific rekit-on-kill kits (see the [configuration documentation](./CONFIG.md#rekit-on-kill-configuration)). Neither is required.
+
 ## Installation
 
 PerPlayerKits has a minimal configuration just requiring selecting the database type. PerPlayerKit supports MySQL/MySQL compatible (MariaDB), PostgreSQL, and SQLite databases. If you don't know what you are doing or don't have access to a database, use `sqlite` as the database type.

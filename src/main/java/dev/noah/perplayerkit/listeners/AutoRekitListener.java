@@ -19,6 +19,9 @@
 package dev.noah.perplayerkit.listeners;
 
 import dev.noah.perplayerkit.KitManager;
+import dev.noah.perplayerkit.util.RekitKitResolver;
+import dev.noah.perplayerkit.util.WorldGuardSupport;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -28,14 +31,24 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class AutoRekitListener implements Listener {
 
     private final Plugin plugin;
+    private final boolean worldGuardInstalled;
+    private final Set<String> warnedMissingKits = new HashSet<>();
 
     public AutoRekitListener(Plugin plugin) {
         this.plugin = plugin;
+        this.worldGuardInstalled = Bukkit.getPluginManager().getPlugin("WorldGuard") != null;
+        if (!worldGuardInstalled && RekitKitResolver.hasRegionEntries(getRekitKitsSection())) {
+            plugin.getLogger().warning("feature.rekit-on-kill.kits contains region entries (\"world:region\") "
+                    + "but WorldGuard is not installed, so those entries will be ignored.");
+        }
     }
 
     @EventHandler
@@ -83,9 +96,56 @@ public class AutoRekitListener implements Listener {
         }
 
         String killerWorld = killer.getWorld().getName();
-        if (isWorldAllowedForRekitOnKill(killerWorld)) {
+        if (!isWorldAllowedForRekitOnKill(killerWorld)) {
+            return;
+        }
+
+        String configuredKit = resolveConfiguredPublicKit(killer);
+        if (configuredKit == null || !giveConfiguredPublicKit(killer, configuredKit)) {
             KitManager.get().loadLastKit(killer);
         }
+    }
+
+    private ConfigurationSection getRekitKitsSection() {
+        return plugin.getConfig().getConfigurationSection("feature.rekit-on-kill.kits");
+    }
+
+    /**
+     * Finds the public kit configured for the killer's world (and WorldGuard
+     * region, if WorldGuard is installed), or null to keep the default
+     * last-used-kit behavior.
+     */
+    private String resolveConfiguredPublicKit(Player killer) {
+        ConfigurationSection kits = getRekitKitsSection();
+        if (kits == null) {
+            return null;
+        }
+        List<String> regionIds = Collections.emptyList();
+        if (worldGuardInstalled && RekitKitResolver.hasRegionEntries(kits)) {
+            try {
+                regionIds = WorldGuardSupport.getRegionIdsByPriority(killer);
+            } catch (Throwable t) { // an incompatible WorldGuard build can fail linkage at runtime
+                plugin.getLogger().warning("Failed to query WorldGuard regions for rekit-on-kill: " + t);
+            }
+        }
+        return RekitKitResolver.resolveKit(kits, killer.getWorld().getName(), regionIds);
+    }
+
+    private boolean giveConfiguredPublicKit(Player killer, String configuredKit) {
+        String kitId = KitManager.get().getPublicKitList().stream()
+                .map(k -> k.id)
+                .filter(id -> id.equalsIgnoreCase(configuredKit))
+                .findFirst()
+                .orElse(configuredKit);
+        if (KitManager.get().hasPublicKit(kitId) && KitManager.get().loadPublicKitSilent(killer, kitId)) {
+            return true;
+        }
+        if (warnedMissingKits.add(configuredKit)) {
+            plugin.getLogger().warning("rekit-on-kill is configured to give public kit \"" + configuredKit
+                    + "\" but that kit does not exist or has no saved contents. "
+                    + "Giving the killer their last used kit instead.");
+        }
+        return false;
     }
 
     /**

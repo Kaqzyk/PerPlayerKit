@@ -365,7 +365,7 @@ feature:
 **Kit Loading Features:**
 - **rekit-on-respawn**: Automatically loads the player's last used kit when they respawn after death
 - **rekit-on-respawn-delay**: Delay in ticks before re-applying the kit on respawn (20 ticks = 1 second). Useful if another plugin gives items on respawn. Default: `0` (instant)
-- **rekit-on-kill**: Automatically loads the killer's last used kit when they kill another player. See [Rekit on Kill Configuration](#rekit-on-kill-configuration) for advanced options
+- **rekit-on-kill**: Automatically re-equips the killer when they kill another player — either their last used kit, or a specific public kit per world / WorldGuard region. See [Rekit on Kill Configuration](#rekit-on-kill-configuration) for advanced options
 - **broadcast-kit-messages**: Controls whether broadcast messages are sent when players load kits or enderchesets (e.g., "Player loaded a kit"). When set to `false`, these specific kit-loading broadcast messages are suppressed
 
 **Action Broadcast Features:**
@@ -385,7 +385,7 @@ feature:
 
 ### **Rekit on Kill Configuration**
 
-The `rekit-on-kill` feature automatically loads the killer's last used kit when they kill another player. This feature supports world-based filtering to control where it activates, based on the killer's current world.
+The `rekit-on-kill` feature automatically re-equips the killer when they kill another player. By default it reloads the killer's last used kit, but it can also be configured to give a specific public kit depending on the world — or even the WorldGuard region — the killer is standing in. This feature supports world-based filtering to control where it activates, based on the killer's current world.
 
 ```yaml
 feature:
@@ -397,6 +397,11 @@ feature:
     # If both are empty, rekit-on-kill works in all worlds
     world-whitelist: []
     world-blacklist: []
+    # Optional: give a specific public kit instead of the killer's last used kit
+    kits:
+      "ffa": "kit1"
+      "ffa:sword_arena":
+        kit: "sword"
 ```
 
 #### Configuration Options:
@@ -404,6 +409,7 @@ feature:
 - **enabled**: Set to `true` to enable the rekit-on-kill feature
 - **world-whitelist**: List of world names where rekit-on-kill is allowed. If this list is not empty, the feature only works in these worlds
 - **world-blacklist**: List of world names where rekit-on-kill is disabled. Only used if `world-whitelist` is empty
+- **kits**: Optional map of worlds (and WorldGuard regions) to public kits. When an entry matches the killer's location, the killer receives that public kit instead of their last used kit. See [Giving a Specific Public Kit](#giving-a-specific-public-kit-per-world--per-worldguard-region) below
 
 #### World Filtering Logic:
 
@@ -442,6 +448,69 @@ feature:
     world-blacklist:
       - "spawn"
       - "lobby"
+```
+
+#### Giving a Specific Public Kit (per world / per WorldGuard region):
+
+On FFA-style servers you often want every kill to hand the killer a fixed, server-defined kit rather than whatever kit they last loaded. The optional `kits` map does exactly that.
+
+Each key is either:
+
+- **`"<world>"`** — matches every kill in that world
+- **`"<world>:<region>"`** — matches kills where the killer is inside that WorldGuard region in that world. Region entries require the [WorldGuard](https://enginehub.org/worldguard) plugin to be installed (it is an optional dependency — everything else works without it)
+
+Each value names a **public kit** — use the kit's id (the key under the `publickits` section, e.g. `kit1`), not its display name. Both of these forms are accepted:
+
+```yaml
+kits:
+  "ffa": "kit1"        # shorthand: key directly maps to the kit id
+  "ffa:sword_arena":   # expanded form
+    kit: "sword"
+```
+
+The kit must also have contents saved with `/savepublickit <id>`; an entry pointing at a kit with no saved contents is skipped with a console warning, and the killer gets their last used kit instead.
+
+**Matching rules:**
+
+1. Region entries (`"world:region"`) always win over world-wide entries (`"world"`)
+2. If the killer is inside several overlapping regions with entries, the region with the highest WorldGuard priority wins (ties are broken alphabetically by region id)
+3. If no entry matches, the killer's last used kit is loaded — the default rekit-on-kill behavior
+4. World and region names are matched case-insensitively; quotes around keys are recommended since region keys contain a colon
+5. The `world-whitelist` / `world-blacklist` filters run first — a kill in a filtered-out world never rekits, even if a `kits` entry matches
+
+**Notes:**
+
+- Kits given through this feature are applied silently: no chat broadcast and no "kit loaded" message, so kill-heavy FFA gameplay doesn't spam chat
+- The killer still needs the `perplayerkit.rekitonkill` permission (granted by default via `perplayerkit.use`)
+- If region entries are configured but WorldGuard is not installed, a warning is logged on startup and those entries are ignored; world-wide entries keep working
+- Config changes take effect after a server restart
+
+**Example — FFA server with a region-specific arena:**
+```yaml
+feature:
+  rekit-on-kill:
+    enabled: true
+    world-whitelist: []
+    world-blacklist: []
+    kits:
+      # Any kill in the "ffa" world hands the killer the "diamond" public kit
+      "ffa": "diamond"
+      # Except inside the WorldGuard region "sword_arena", where they get "sword"
+      "ffa:sword_arena":
+        kit: "sword"
+```
+
+**Example — different kit per arena world, last-kit behavior elsewhere:**
+```yaml
+feature:
+  rekit-on-kill:
+    enabled: true
+    world-whitelist: []
+    world-blacklist: []
+    kits:
+      "nethpot_arena": "nethpot"
+      "crystal_arena": "crystal"
+      # kills in any other world reload the killer's last used kit
 ```
 
 #### Backwards Compatibility:
