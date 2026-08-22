@@ -1,0 +1,148 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "PerPlayerKit",
+  "description": "Per-player custom PvP kits for Paper and Spigot servers.",
+  "colors": {
+    "primary": "#2E9E8F",
+    "light": "#5FD3C2",
+    "dark": "#17605A"
+  },
+  "favicon": "/favicon.svg",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg",
+    "href": "https://perplayerkit.com"
+  },
+  "icons": {
+    "library": "fontawesome"
+  },
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get started",
+        "pages": [
+          "introduction",
+          "installation",
+          "quickstart"
+        ]
+      },
+      {
+        "group": "Configuration",
+        "pages": [
+          "configuration/database",
+          "configuration/backups",
+          "configuration/kit-slots",
+          "configuration/feature-flags",
+          "configuration/rekit-on-kill",
+          "configuration/regear",
+          "configuration/anti-exploit",
+          "configuration/messages",
+          "configuration/languages",
+          "configuration/interface"
+        ]
+      },
+      {
+        "group": "Commands & permissions",
+        "pages": [
+          "commands/player-commands",
+          "commands/sharing",
+          "commands/admin-commands",
+          "commands/permissions"
+        ]
+      },
+      {
+        "group": "Guides",
+        "pages": [
+          "guides/kit-room-setup",
+          "guides/public-kits",
+          "guides/storage-migration",
+          "guides/kit-data",
+          "guides/purge-items",
+          "guides/troubleshooting"
+        ]
+      },
+      {
+        "group": "Developer API",
+        "pages": [
+          "api/overview",
+          "api/usage"
+        ]
+      }
+    ]
+  },
+  "navbar": {
+    "links": [
+      {
+        "type": "github",
+        "href": "https://github.com/rossnoah/PerPlayerKit"
+      },
+      {
+        "label": "Modrinth",
+        "href": "https://modrinth.com/plugin/perplayerkit"
+      }
+    ],
+    "primary": {
+      "type": "discord",
+      "href": "https://discord.gg/5djuBSKWuV"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/rossnoah/PerPlayerKit",
+      "discord": "https://discord.gg/5djuBSKWuV",
+      "website": "https://perplayerkit.com"
+    },
+    "links": [
+      {
+        "header": "Downloads",
+        "items": [
+          {
+            "label": "Modrinth",
+            "href": "https://modrinth.com/plugin/perplayerkit"
+          },
+          {
+            "label": "SpigotMC",
+            "href": "https://www.spigotmc.org/resources/perplayerkit.121437/"
+          },
+          {
+            "label": "GitHub releases",
+            "href": "https://github.com/rossnoah/PerPlayerKit/releases"
+          }
+        ]
+      },
+      {
+        "header": "Project",
+        "items": [
+          {
+            "label": "Source code",
+            "href": "https://github.com/rossnoah/PerPlayerKit"
+          },
+          {
+            "label": "Report an issue",
+            "href": "https://github.com/rossnoah/PerPlayerKit/issues"
+          },
+          {
+            "label": "License (AGPL-3.0)",
+            "href": "https://github.com/rossnoah/PerPlayerKit/blob/main/LICENSE"
+          }
+        ]
+      }
+    ]
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
+  },
+  "seo": {
+    "indexing": "all"
+  }
+}
