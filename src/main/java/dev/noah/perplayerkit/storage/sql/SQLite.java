@@ -22,8 +22,11 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.plugin.Plugin;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class SQLite implements SQLDatabase {
@@ -112,5 +115,45 @@ public class SQLite implements SQLDatabase {
             }
         }
         return dataSource.getConnection();
+    }
+
+    @Override
+    public boolean supportsOnlineBackup() {
+        return true;
+    }
+
+    /**
+     * Snapshot the database with {@code VACUUM INTO} (SQLite 3.27+). SQLite reads
+     * the database inside a transaction and writes a fresh, defragmented copy that
+     * already contains everything sitting in the WAL, so the result is consistent
+     * without pausing the server and without copying the -wal/-shm sidecars.
+     */
+    @Override
+    public void backupTo(Path target) throws SQLException {
+        // VACUUM INTO refuses to overwrite, so clear the target first.
+        try {
+            Path parent = target.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            Files.deleteIfExists(target);
+        } catch (IOException e) {
+            throw new SQLException("Failed to prepare SQLite backup target " + target, e);
+        }
+
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement("VACUUM INTO ?")) {
+            ps.setString(1, target.toAbsolutePath().toString());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            // Do not leave a half-written snapshot behind for the retention
+            // sweep to hand back to someone as a valid backup.
+            try {
+                Files.deleteIfExists(target);
+            } catch (IOException suppressed) {
+                e.addSuppressed(suppressed);
+            }
+            throw e;
+        }
     }
 }

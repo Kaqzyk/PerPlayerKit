@@ -22,6 +22,7 @@ import dev.noah.perplayerkit.storage.exceptions.StorageConnectionException;
 import dev.noah.perplayerkit.storage.exceptions.StorageOperationException;
 import dev.noah.perplayerkit.storage.sql.SQLDatabase;
 
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,7 +30,7 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SQLStorage implements StorageManager {
+public class SQLStorage implements StorageManager, BackupCapable {
 
     private final SQLDatabase db;
 
@@ -73,6 +74,20 @@ public class SQLStorage implements StorageManager {
             db.disconnect();
         } catch (SQLException e) {
             throw new StorageConnectionException("Failed to close the database connection", e);
+        }
+    }
+
+    @Override
+    public boolean supportsNativeBackup() {
+        return db.supportsOnlineBackup();
+    }
+
+    @Override
+    public void backupTo(Path target) throws StorageOperationException {
+        try {
+            db.backupTo(target);
+        } catch (SQLException e) {
+            throw new StorageOperationException("Failed to back up the database to " + target, e);
         }
     }
 

@@ -18,6 +18,9 @@
  */
 package dev.noah.perplayerkit.util;
 
+import dev.noah.perplayerkit.storage.BackupCapable;
+import dev.noah.perplayerkit.storage.StorageManager;
+import dev.noah.perplayerkit.storage.exceptions.StorageOperationException;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -25,19 +28,18 @@ import org.bukkit.scheduler.BukkitTask;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class BackupManager {
 
     private static BackupManager instance;
     private final Plugin plugin;
+    private final StorageManager storageManager;
     private final File backupDir;
     private final boolean enabled;
     private BukkitTask hourlyTask;
@@ -64,8 +66,9 @@ public class BackupManager {
     private static final String WEEKLY_PREFIX = "weekly_";
     private static final String MONTHLY_PREFIX = "monthly_";
 
-    public BackupManager(Plugin plugin) {
+    public BackupManager(Plugin plugin, StorageManager storageManager) {
         this.plugin = plugin;
+        this.storageManager = storageManager;
         this.enabled = plugin.getConfig().getBoolean("backup.enabled", true);
         this.backupDir = new File(plugin.getDataFolder(), "backups");
 
@@ -150,13 +153,7 @@ public class BackupManager {
         try {
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
 
-            // Backup SQLite database
-            File sqliteFile = new File(plugin.getDataFolder(), "database.db");
-            if (sqliteFile.exists()) {
-                File backupFile = new File(backupDir, prefix + "database_" + timestamp + ".db");
-                Files.copy(sqliteFile.toPath(), backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                plugin.getLogger().info("Backed up SQLite database to: " + backupFile.getName());
-            }
+            backupDatabase(prefix, timestamp);
 
             // Backup YAML storage
             File yamlFile = new File(plugin.getDataFolder(), "please-use-a-real-database.yml");
@@ -176,6 +173,58 @@ public class BackupManager {
     }
 
     /**
+     * Back up the SQLite database. The database engine writes the snapshot itself
+     * (see {@link BackupCapable}), which is consistent even while the server is
+     * writing; copying the live file is only used if the engine cannot do it.
+     */
+    private void backupDatabase(String prefix, String timestamp) throws IOException {
+        File databaseFile = new File(plugin.getDataFolder(), "database.db");
+        if (!databaseFile.exists()) {
+            return;
+        }
+
+        File backupFile = new File(backupDir, prefix + "database_" + timestamp + ".db");
+
+        if (storageManager instanceof BackupCapable capable && capable.supportsNativeBackup()) {
+            try {
+                capable.backupTo(backupFile.toPath());
+                plugin.getLogger().info("Backed up SQLite database to: " + backupFile.getName());
+                return;
+            } catch (StorageOperationException e) {
+                plugin.getLogger().warning("SQLite snapshot backup failed (" + e.getMessage()
+                        + "), falling back to copying the database files");
+            }
+        }
+
+        copyDatabaseFiles(prefix, timestamp, databaseFile, backupFile);
+    }
+
+    /**
+     * Fallback used when the database cannot snapshot itself: copy the database
+     * file together with its WAL and SHM sidecars, which have to be restored
+     * alongside it for the copy to be usable.
+     */
+    private void copyDatabaseFiles(String prefix, String timestamp, File databaseFile, File backupFile)
+            throws IOException {
+        Files.copy(databaseFile.toPath(), backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        plugin.getLogger().info("Backed up SQLite database to: " + backupFile.getName());
+
+        // Write-Ahead Log
+        File walFile = new File(plugin.getDataFolder(), "database.db-wal");
+        if (walFile.exists()) {
+            Files.copy(walFile.toPath(), new File(backupDir, prefix + "database-wal_" + timestamp + ".db").toPath(),
+                    StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        // Shared Memory index
+        File shmFile = new File(plugin.getDataFolder(), "database.db-shm");
+        if (shmFile.exists()) {
+            Files.copy(shmFile.toPath(), new File(backupDir, prefix + "database-shm_" + timestamp + ".db").toPath(),
+                    StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    /**
      * Backup additional files that might be important for the plugin
      * 
      * @param prefix    The backup prefix
@@ -187,20 +236,6 @@ public class BackupManager {
         if (configFile.exists()) {
             File backupFile = new File(backupDir, prefix + "config_" + timestamp + ".yml");
             Files.copy(configFile.toPath(), backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        }
-
-        // Backup any WAL files (SQLite Write-Ahead Logging)
-        File walFile = new File(plugin.getDataFolder(), "database.db-wal");
-        if (walFile.exists()) {
-            File backupFile = new File(backupDir, prefix + "database-wal_" + timestamp + ".db");
-            Files.copy(walFile.toPath(), backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        }
-
-        // Backup any SHM files (SQLite Shared Memory)
-        File shmFile = new File(plugin.getDataFolder(), "database.db-shm");
-        if (shmFile.exists()) {
-            File backupFile = new File(backupDir, prefix + "database-shm_" + timestamp + ".db");
-            Files.copy(shmFile.toPath(), backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
     }
 

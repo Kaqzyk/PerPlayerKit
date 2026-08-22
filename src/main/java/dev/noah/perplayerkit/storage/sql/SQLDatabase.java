@@ -18,6 +18,7 @@
  */
 package dev.noah.perplayerkit.storage.sql;
 
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -45,6 +46,26 @@ public interface SQLDatabase {
      */
     default String getUpsertStatement() {
         return "REPLACE INTO kits (KITID, KITDATA) VALUES (?,?)";
+    }
+
+    /**
+     * Whether this backend can snapshot itself to a file with
+     * {@link #backupTo(Path)}. Only embedded, file-backed databases can; server
+     * backends (MySQL, PostgreSQL) are backed up by their own tooling.
+     */
+    default boolean supportsOnlineBackup() {
+        return false;
+    }
+
+    /**
+     * Write a consistent snapshot of the database to {@code target} using the
+     * database engine's own backup facility, safe to call while the server is
+     * running and writing.
+     *
+     * @throws SQLException if the snapshot could not be taken
+     */
+    default void backupTo(Path target) throws SQLException {
+        throw new UnsupportedOperationException(getClass().getSimpleName() + " does not support online backups");
     }
 
 }

@@ -135,7 +135,7 @@ public final class PerPlayerKit extends JavaPlugin {
 
         // Initialize backup system for file-based storage methods
         if (isFileBasedStorage(dbType)) {
-            backupManager = new BackupManager(this);
+            backupManager = new BackupManager(this, storageManager);
             if (backupManager.isEnabled()) {
                 getLogger().info("Backup system initialized for file-based storage");
             } else {
