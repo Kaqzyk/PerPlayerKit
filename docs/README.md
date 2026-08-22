@@ -23,6 +23,7 @@ mint validate
 docs/
 ├── docs.json              # site config + sidebar navigation
 ├── introduction.mdx       # landing page
+├── downloads.mdx          # Modrinth / Spigot / Hangar / Jenkins dev builds
 ├── installation.mdx
 ├── quickstart.mdx
 ├── configuration/         # one page per config.yml section
@@ -30,6 +31,7 @@ docs/
 ├── guides/                # task-oriented walkthroughs
 ├── api/                   # Java API for plugin developers
 ├── images/                # screenshots
+├── favicon.png            # project icon (same mark as Modrinth)
 ├── logo/                  # navbar logos (light/dark)
 └── .mintlify/AGENTS.md    # instructions for the Mintlify agent
 ```

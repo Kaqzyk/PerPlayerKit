@@ -1,0 +1,54 @@
+---
+title: "Download PerPlayerKit"
+sidebarTitle: "Downloads"
+description: "Every place to download PerPlayerKit — Modrinth, SpigotMC, Hangar, and GitHub releases — plus bleeding-edge dev builds from Jenkins."
+icon: "download"
+---
+
+PerPlayerKit is published to every major plugin platform. The jar is identical on all of them, so pick whichever you already use — releases go out to all four at the same time.
+
+## Stable releases
+
+<Columns cols={2}>
+  <Card title="Modrinth" icon="box" href="https://modrinth.com/plugin/perplayerkit">
+    The primary release channel. Open source friendly, no ads, direct jar downloads.
+  </Card>
+
+  <Card title="SpigotMC" icon="faucet" href="https://www.spigotmc.org/resources/perplayerkit.121437/">
+    The classic Spigot resource page, with the discussion and review threads.
+  </Card>
+
+  <Card title="Hangar" icon="paper-plane" href="https://hangar.papermc.io/noah32/PerPlayerKit">
+    PaperMC's official plugin repository.
+  </Card>
+
+  <Card title="GitHub releases" icon="github" href="https://github.com/rossnoah/PerPlayerKit/releases">
+    Tagged releases with changelogs, next to the source code.
+  </Card>
+</Columns>
+
+<Tip>
+  Always run the newest stable release. Kit data is forward-compatible between versions, so upgrading is a drop-in jar swap — stop the server, replace the jar, start it again.
+</Tip>
+
+## Development builds
+
+Every commit to the main branch is built automatically on Jenkins. Dev builds carry fixes and features that have not shipped in a release yet.
+
+<Card title="Jenkins — PerPlayerKit" icon="hammer" href="https://jenkins.noah.dev/job/PerPlayerKit/">
+  Browse all builds, or grab the jar straight from the [latest successful build](https://jenkins.noah.dev/job/PerPlayerKit/lastSuccessfulBuild/).
+</Card>
+
+<Warning>
+  Development builds are unreleased code. They compile, but they have not been through a release's testing. Do not run them on a production server without backing up your kit data first — see [Backups](/configuration/backups).
+</Warning>
+
+## Requirements
+
+| Requirement       | Minimum Version |
+| ----------------- | --------------- |
+| Server software   | Paper or Spigot |
+| Minecraft version | 1.19 or newer   |
+| Java              | 17 or newer     |
+
+Once you have the jar, follow the [installation guide](/installation) to get it running.

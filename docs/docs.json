@@ -4,11 +4,11 @@
   "name": "PerPlayerKit",
   "description": "Per-player custom PvP kits for Paper and Spigot servers.",
   "colors": {
-    "primary": "#2E9E8F",
-    "light": "#5FD3C2",
-    "dark": "#17605A"
+    "primary": "#1F4145",
+    "light": "#A6C2C2",
+    "dark": "#0E1B1E"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon.png",
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg",
@@ -23,6 +23,7 @@
         "group": "Get started",
         "pages": [
           "introduction",
+          "downloads",
           "installation",
           "quickstart"
         ]
@@ -78,8 +79,8 @@
         "href": "https://github.com/rossnoah/PerPlayerKit"
       },
       {
-        "label": "Modrinth",
-        "href": "https://modrinth.com/plugin/perplayerkit"
+        "label": "Downloads",
+        "href": "/downloads"
       }
     ],
     "primary": {
@@ -106,8 +107,16 @@
             "href": "https://www.spigotmc.org/resources/perplayerkit.121437/"
           },
           {
+            "label": "Hangar",
+            "href": "https://hangar.papermc.io/noah32/PerPlayerKit"
+          },
+          {
             "label": "GitHub releases",
             "href": "https://github.com/rossnoah/PerPlayerKit/releases"
+          },
+          {
+            "label": "Dev builds (Jenkins)",
+            "href": "https://jenkins.noah.dev/job/PerPlayerKit/"
           }
         ]
       },

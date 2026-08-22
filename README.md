@@ -1,9 +1,23 @@
 # PerPlayerKit
 [![Modrinth](https://img.shields.io/modrinth/dt/perplayerkit?logo=modrinth)](https://modrinth.com/plugin/perplayerkit)
 [![Spigot](https://img.shields.io/spiget/downloads/121437?label=Spigot&logo=spigotmc)](https://www.spigotmc.org/resources/perplayerkit.121437/)
+[![Hangar](https://img.shields.io/hangar/dt/PerPlayerKit?label=Hangar&logo=papermc)](https://hangar.papermc.io/noah32/PerPlayerKit)
 [![bStats](https://img.shields.io/bstats/servers/24380?label=Servers%20[Live]&logo=chartdotjs)](https://bstats.org/plugin/bukkit/PerPlayerKit/24380)
+[![Build](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins.noah.dev%2Fjob%2FPerPlayerKit&label=dev%20build&logo=jenkins&logoColor=white)](https://jenkins.noah.dev/job/PerPlayerKit/)
 
 Docs: [perplayerkit.com](https://perplayerkit.com) (work in progress)
+
+## Downloads
+
+| Where | Link |
+| --- | --- |
+| Modrinth | https://modrinth.com/plugin/perplayerkit |
+| SpigotMC | https://www.spigotmc.org/resources/perplayerkit.121437/ |
+| Hangar | https://hangar.papermc.io/noah32/PerPlayerKit |
+| GitHub releases | https://github.com/rossnoah/PerPlayerKit/releases |
+| Dev builds (Jenkins) | https://jenkins.noah.dev/job/PerPlayerKit/ |
+
+Dev builds are built from the main branch on every commit and are untested — back up your kit data before running one in production.
 
 Join the discord for more information and support: [Discord](https://discord.gg/5djuBSKWuV)
 
