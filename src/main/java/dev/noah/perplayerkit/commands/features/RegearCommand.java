@@ -109,9 +109,10 @@ public class RegearCommand implements CommandExecutor, Listener {
 
         player.getInventory().setItem(event.getHand(), null);
 
-        RegearInventoryHolder holder = new RegearInventoryHolder(player);
-        Inventory inventory = createRegearInventory(holder);
-        player.openInventory(inventory);
+        KitManager.get().regearKit(player, slot);
+        player.updateInventory();
+
+        announceRegearSuccess(player);
     }
 
     @EventHandler
